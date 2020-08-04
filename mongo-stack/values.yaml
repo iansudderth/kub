@@ -1,0 +1,18 @@
+# Default values for mongo-stack.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+mongodb:
+  mongodbRootPassword: admin
+  service:
+    port: 27017
+    name: mongodb-service
+
+mongoExpress:
+  path: "/mongo-express"
+  appPort: 8081
+  nodePort: 30001
+
+
+global:
+  namespaceOverride: mongo-stack

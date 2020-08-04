@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.global.namespaceOverride }}
+  name: mongo-express
+  labels:
+    app: mongo-express
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo-express
+  template:
+    metadata:
+      labels:
+        app: mongo-express
+    spec:
+      containers:
+        - name: mongo-express
+          image: mongo-express
+          ports:
+            - containerPort: 8081
+          env:
+            - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+              value: root
+            - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+              value: {{.Values.mongodb.mongodbRootPassword}}
+            - name: ME_CONFIG_MONGODB_SERVER
+              value: mongodb-service
+            - name: ME_CONFIG_SITE_BASEURL
+              value: {{ .Values.mongoExpress.path }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.global.namespaceOverride }}
+  name: mongo-express-service
+spec:
+  selector:
+    app: mongo-express
+  type: LoadBalancer
+  ports:
+    - port: {{.Values.mongoExpress.appPort}}
+      targetPort: 8081
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: mongo-express-ingress
+  namespace: {{ .Values.global.namespaceOverride }}
+spec:
+  rules:
+    - host: k8s.local
+      http:
+        paths:
+          - path: {{.Values.mongoExpress.path}}
+            backend:
+              serviceName: mongo-express-service
+              servicePort: {{.Values.mongoExpress.appPort}}
+
